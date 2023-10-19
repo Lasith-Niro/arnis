@@ -3,44 +3,31 @@ import requests
 from random import choice
 
 
-def getData(city, state, country, debug):
+def getData(bbox, debug):
     print("Fetching data...")
-    api_servers = [
-        "https://overpass-api.de/api/interpreter",
-        "https://lz4.overpass-api.de/api/interpreter",
-        "https://z.overpass-api.de/api/interpreter",
-        "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
-        "https://overpass.openstreetmap.ru/api/interpreter",
-        "https://overpass.kumi.systems/api/interpreter",
-    ]
-    url = choice(api_servers)
-    query1 = (
-        """
-        [out:json];
-        area[name="""
-        + '"'
-        + city
-        + '"'
-        + """]->.city;
-        area[name="""
-        + '"'
-        + state
-        + '"'
-        + """]->.state;
-        area[name="""
-        + '"'
-        + country
-        + '"'
-        + """]->.country;
-        way(area.country)(area.state)(area.city)[!power][!place][!ferry];
+    bbox = bbox.split(",")
+    # convert bbox to float
+    bbox = [float(i) for i in bbox]
+    server = "https://overpass-api.de/api/interpreter"
+    overpass_query = f"""
+        [out:json][bbox:{bbox[1]},{bbox[0]},{bbox[3]},{bbox[2]}];
+        ( 
+        way["highway"];
+        way["building"];
+        way["water"];
+        way["landuse"];
+        relation["water"];
+        relation["landuse"];
+        relation["highway"];
+        relation["building"];
+        );
         (._;>;);
         out;
-    """
-    )
-
-    print(f"Chosen server: {url}")
+        """
+    if debug:
+        print(overpass_query)
     try:
-        data = requests.get(url, params={"data": query1}).json()
+        data = requests.get(server, params={"data": overpass_query}).json()
 
         if len(data["elements"]) == 0:
             print("Error! No data available")
@@ -54,7 +41,7 @@ def getData(city, state, country, debug):
             print(f"Error! {e}")
         os._exit(1)
 
-    if debug:
-        with open("arnis-debug-raw_data.json", "w", encoding="utf-8") as f:
-            f.write(str(data))
+    # if debug:
+    with open("arnis-debug-raw_data.json", "w", encoding="utf-8") as f:
+        f.write(str(data))
     return data

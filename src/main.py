@@ -17,12 +17,15 @@ import numpy as np
 from .getData import getData
 from .processData import processData
 
+# python .\arnis.py --bbox "-6.28254, 53.35393, -6.27840, 53.35685" --path ".\maps3"  --debug
+
 parser = argparse.ArgumentParser(
     description="Arnis - Generate cities from real life in Minecraft using Python"
 )
-parser.add_argument("--city", dest="city", help="Name of the city")
-parser.add_argument("--state", dest="state", help="Name of the state")
-parser.add_argument("--country", dest="country", help="Name of the country")
+# parser.add_argument("--city", dest="city", help="Name of the city")
+# parser.add_argument("--state", dest="state", help="Name of the state")
+# parser.add_argument("--country", dest="country", help="Name of the country")
+parser.add_argument("--bbox", dest="bbox", help="Bounding box of the city")
 parser.add_argument("--path", dest="path", help="Path to the minecraft world")
 parser.add_argument(
     "--debug",
@@ -119,7 +122,7 @@ def run():
         print("Error! No Minecraft world found at given path")
         os._exit(1)
 
-    rawdata = getData(args.city, args.state, args.country, args.debug)
+    rawdata = getData(args.bbox, args.debug)
     imgarray = processData(rawdata, args)
 
     print("Generating minecraft world...")
